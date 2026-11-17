@@ -7,7 +7,7 @@
         <cfset local.users = []>
         <!--- adding error handling --->
         <cftry>
-            <cfquery name = "local.qUsers" datasource = "college_assignment">
+            <cfquery name = "local.qUsers" >
             
                 SELECT
                 id,
@@ -60,7 +60,7 @@
             </cfif>
          
             <!--- Query Database --->
-            <cfquery name = "local.quser" datasource = "college_assignment">
+            <cfquery name = "local.quser" >
                 SELECT
                 id,
                 name,

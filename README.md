@@ -1,25 +1,29 @@
 # ColdFusion User Management REST API
 
-A beginner-friendly REST API project built using **Adobe ColdFusion 2025** and **MySQL 8.4**. This project demonstrates how to create REST endpoints, connect ColdFusion to a MySQL database, retrieve user records, validate request parameters, and handle errors using CFML.
+A beginner-friendly REST API project built using **Adobe ColdFusion 2025** and **MySQL 8.4**.
+
+This project demonstrates how to build REST endpoints using CFML, connect ColdFusion to a MySQL database, retrieve user records, validate request parameters, prevent SQL injection, and handle errors using structured JSON responses.
 
 ## 🚀 Project Overview
 
-This project implements a basic User Management API that retrieves user information from a MySQL database.
+This project implements a basic User Management REST API with the following functionality:
 
-It includes:
-- Fetching all users from the database.
-- Fetching an individual user using their ID.
-- Validating user IDs before executing database queries.
-- Using parameterized SQL queries to prevent SQL injection.
-- Handling errors with `cftry` and `cfcatch`.
-- Returning structured JSON responses with appropriate HTTP status codes.
+- Fetch all users from the database.
+- Fetch an individual user using their ID.
+- Validate user IDs before executing database queries.
+- Use parameterized SQL queries to prevent SQL injection.
+- Handle database and application errors using `cftry` and `cfcatch`.
+- Maintain a consistent JSON response structure.
+- Use appropriate HTTP status codes.
+- Centralize application and datasource configuration.
+- Provide local testing pages for retrieving user records.
 
 ## 🛠️ Technologies Used
 
 - **Backend:** Adobe ColdFusion 2025 (CFML)
 - **Database:** MySQL 8.4
 - **Database Connectivity:** ColdFusion Data Source (MySQL)
-- **API Testing:** Browser / REST client
+- **API Testing:** Browser / Postman
 - **IDE:** Visual Studio Code
 
 ## 📁 Project Structure
@@ -27,10 +31,12 @@ It includes:
 ```text
 assignment/
 │
+├── Application.cfc
 ├── UserService.cfc
 ├── UserAPI.cfc
 ├── index.cfm
 ├── getUser.cfm
+├── schema.sql
 └── README.md
 ```
 
@@ -38,11 +44,13 @@ assignment/
 
 | File | Description |
 |---|---|
-| `UserService.cfc` | Contains the business logic and database operations. Includes functions to retrieve all users and retrieve a user by ID. |
-| `UserAPI.cfc` | Exposes the service functions as REST API endpoints and returns JSON responses with appropriate HTTP status codes. |
-| `index.cfm` | A simple testing page that retrieves and displays all users from the database. |
-| `getUser.cfm` | A testing page that retrieves a user by ID and displays the response, including validation and error messages. |
-| `README.md` | Documentation for the project. |
+| `Application.cfc` | Defines application-level configuration, including the application name and default datasource. |
+| `UserService.cfc` | Contains business logic and database operations. Includes functions to retrieve all users and retrieve a user by ID. |
+| `UserAPI.cfc` | Exposes service functions as REST API endpoints and returns JSON responses with appropriate HTTP status codes. |
+| `index.cfm` | A local testing page that retrieves and displays all users. |
+| `getUser.cfm` | A local testing page that retrieves a user by ID and displays the response, including validation and error messages. |
+| `schema.sql` | Contains the database and users table definition, along with sample records required to set up the project. |
+| `README.md` | Project documentation and setup instructions. |
 
 ## 🔗 API Endpoints
 
@@ -58,9 +66,7 @@ Retrieves all user records from the MySQL database.
 http://localhost:8500/rest/assignment/users
 ```
 
-**Check the API response:**
-
-[Click here to view all users](http://localhost:8500/rest/assignment/users)
+[View All Users](http://localhost:8500/rest/assignment/users)
 
 ### 2. Get User by ID
 
@@ -88,15 +94,30 @@ Replace `2` with the ID of the user you want to retrieve.
 
 **Table:** `users`
 
-| Column | Description |
-|---|---|
-| `id` | Unique user ID |
-| `name` | User's name |
-| `email` | User's email address |
-| `age` | User's age |
-| `created_at` | Record creation timestamp |
+| Column | Data Type | Description |
+|---|---|---|
+| `id` | INT | Unique user ID and primary key |
+| `name` | VARCHAR(100) | User's name |
+| `email` | VARCHAR(150) | User's email address; unique |
+| `age` | INT | User's age |
+| `created_at` | TIMESTAMP | Record creation timestamp |
 
-The project uses a ColdFusion datasource named `college_assignment` to connect to MySQL.
+The project uses a MySQL datasource named `college_assignment` configured in ColdFusion Administrator.
+
+The default datasource is declared centrally in `Application.cfc`, avoiding the need to repeat the datasource name in individual database queries.
+
+### Database Setup
+
+The `schema.sql` file contains:
+
+- Database creation statement.
+- Users table definition.
+- Primary key and unique email constraints.
+- Sample user records.
+
+To set up the database, execute `schema.sql` in MySQL Workbench or another MySQL client.
+
+**Note:** The current schema script recreates the users table. Execute it only when setting up a fresh database or when you have backed up any existing data you need.
 
 ## 🔐 Validation and Error Handling
 
@@ -105,7 +126,13 @@ The `getUserById()` function performs the following checks:
 - **Valid ID:** Accepts a positive integer.
 - **Invalid ID:** Returns HTTP 400 for invalid or non-positive IDs.
 - **User Not Found:** Returns HTTP 404 if the requested user does not exist.
-- **Server Error:** Uses `cftry` and `cfcatch` to handle unexpected errors and returns HTTP 500.
+- **Server Error:** Uses `cftry` and `cfcatch` to handle unexpected database or application errors and returns HTTP 500.
+
+The `getAllUsers()` function also includes error handling to manage unexpected database failures.
+
+The API layer handles unexpected errors while processing requests and preparing HTTP responses.
+
+Error details are logged on the server rather than exposed to API clients.
 
 ### SQL Injection Prevention
 
@@ -114,7 +141,7 @@ Database queries use `<cfqueryparam>` to safely pass dynamic values into SQL sta
 Example:
 
 ```cfm
-<cfquery name="local.qUser" datasource="college_assignment">
+<cfquery name="local.qUser">
     SELECT id, name, email, age, created_at
     FROM users
     WHERE id = <cfqueryparam
@@ -123,9 +150,25 @@ Example:
 </cfquery>
 ```
 
+## 🛡️ Cross-Site Scripting (XSS) Prevention
+
+The local testing pages use ColdFusion output encoding functions such as:
+
+- `encodeForHTML()` for values displayed inside HTML content.
+- `encodeForHTMLAttribute()` for values displayed inside HTML attributes.
+
+This helps prevent untrusted database values from being interpreted as executable HTML or script content.
+
 ## 📦 API Response Format
 
-The API returns a consistent JSON response structure:
+All API endpoints follow a consistent JSON response structure with the following keys:
+
+- `success`
+- `statusCode`
+- `message`
+- `data`
+
+### Successful Response — HTTP 200
 
 ```json
 {
@@ -135,13 +178,27 @@ The API returns a consistent JSON response structure:
     "data": {
         "id": 2,
         "name": "Rahul",
-        "email": "rahul@gmail.com",
-        "age": 22
+        "email": "rahul@example.com",
+        "age": 24,
+        "created_at": "2026-11-17"
     }
 }
 ```
 
-Possible HTTP status codes:
+### Error Response — HTTP 404
+
+```json
+{
+    "success": false,
+    "statusCode": 404,
+    "message": "User not found",
+    "data": {}
+}
+```
+
+For the all-users endpoint, `data` contains an array of user objects. For an individual-user endpoint, it contains a user object or an empty structure when no user is available.
+
+### HTTP Status Codes
 
 | Status Code | Meaning |
 |---|---|
@@ -152,19 +209,73 @@ Possible HTTP status codes:
 
 ## ⚙️ Running the Project Locally
 
+### Prerequisites
+
 1. Install Adobe ColdFusion 2025.
 2. Install MySQL 8.4.
-3. Create a database named `college_assignment`.
-4. Create the `users` table and insert sample records.
-5. Configure a MySQL datasource named `college_assignment` in ColdFusion Administrator.
-6. Place the project folder inside the ColdFusion web root.
-7. Ensure the REST application is registered and accessible under the `assignment` REST mapping.
-8. Start the ColdFusion server.
-9. Open the API endpoint in your browser or test it using Postman.
+3. Install Visual Studio Code or another code editor.
 
-**Local API URL:**
+### Step 1: Set Up the Database
 
+- Open MySQL Workbench.
+- Execute the `schema.sql` file.
+- Verify that the `college_assignment` database and `users` table have been created.
+
+### Step 2: Configure the ColdFusion Datasource
+
+- Open ColdFusion Administrator.
+- Navigate to Data Sources.
+- Create a MySQL datasource named `college_assignment`.
+- Configure the MySQL connection details.
+- Verify that the datasource connection succeeds.
+
+### Step 3: Configure the Application
+
+Place the project folder inside the ColdFusion web root.
+
+Ensure that `Application.cfc` is present in the `assignment` directory and defines the application name and default datasource.
+
+### Step 4: Register the REST Application
+
+Ensure that the REST application is registered in ColdFusion Administrator under the REST Services section.
+
+Use the `assignment` REST mapping.
+
+### Step 5: Start the ColdFusion Server
+
+Ensure that the ColdFusion service is running.
+
+### Step 6: Test the API
+
+Open the following endpoint in your browser or test it using Postman:
+
+```http
 http://localhost:8500/rest/assignment/users
+```
+
+To retrieve a specific user:
+
+```http
+http://localhost:8500/rest/assignment/users/1
+```
+
+## 🧪 Local Testing Pages
+
+The project also includes two CFML pages for testing service functionality independently of the REST endpoints.
+
+**User List:**
+
+```text
+http://localhost:8500/assignment/index.cfm
+```
+
+**User Details:**
+
+```text
+http://localhost:8500/assignment/getUser.cfm?id=1
+```
+
+The `getUser.cfm` page accepts a dynamic ID through a URL parameter, allowing different scenarios to be tested, including invalid IDs and users that do not exist.
 
 ## 🎯 Learning Objectives
 
@@ -179,7 +290,10 @@ Through this project, I practised:
 - Handling exceptions using `<cftry>` and `<cfcatch>`.
 - Building REST endpoints in ColdFusion.
 - Returning structured JSON responses.
+- Configuring applications using `Application.cfc`.
+- Understanding basic XSS prevention and output encoding.
+- Organizing backend code into service and API layers.
 
 ---
 
-**Note:** This is a locally hosted learning project. The API URL works only when the ColdFusion server is running on the same machine. It is not a publicly deployed endpoint.
+**Note:** This is a locally hosted learning project. The API URLs work only when the ColdFusion server is running on the local machine. It is not a publicly deployed endpoint.

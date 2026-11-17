@@ -65,8 +65,7 @@
         httpMethod="GET"
          restpath=""
          produces="application/json"
-         hint="Returns all users"
-        >
+         hint="Returns all users" >
 
         <cftry> 
           <!--- Create service object --->
@@ -102,6 +101,5 @@
               </cfcatch>
                     
         </cftry>
-                </cffunction>
-    
-            </cfcomponent> 
+     </cffunction>
+  </cfcomponent> 
