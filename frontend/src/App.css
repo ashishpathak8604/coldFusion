@@ -1,0 +1,63 @@
+#root {
+  min-height: 100vh;
+}
+
+body{
+
+  margin: 0;
+  background: #f5f5f5;
+  font-family: Arial,sans-serif;
+}
+
+.container {
+  max-width: 650px;
+  margin: 70px auto;
+  padding: 25px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.search-section {
+  display: flex;
+  gap: 10px;
+  margin: 25px 0 15px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 5px;
+  background: #26354a;
+  color: white;
+  cursor: pointer;
+}
+
+.add-button {
+  background: #198754;
+}
+
+.result-section {
+ margin-top: 25px;
+ padding: 15px;
+ border: 1px solid #ddd;
+ border-radius: 5px;
+}
+
+.users-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+@media (max-width: 700px) {
+  .container {
+    margin: 25px 15px;
+  }
+}
