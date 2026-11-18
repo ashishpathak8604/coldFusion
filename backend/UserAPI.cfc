@@ -22,7 +22,7 @@
 
      <cfset local.UserService  = createObject(
         "component",
-        "assignment.UserService"
+        "assignment.backend.UserService"
      )>
 
       <!--- Get structured respose form service --->
@@ -71,7 +71,7 @@
           <!--- Create service object --->
         <cfset local.userService = createObject(
             "component",
-            "assignment.UserService"
+            "assignment.backend.UserService"
         
         ) >
        

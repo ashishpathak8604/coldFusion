@@ -3,7 +3,7 @@
 
 <cfset userService = createObject(
     "component",
-    "assignment.UserService"
+    "assignment.backend.UserService"
 )>
 <!--- Passing dynamic user id --->
 <cfset response = userService.getUserById(url.id)>

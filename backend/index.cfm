@@ -1,6 +1,6 @@
 <cfset userService = createObject(
     "component",
-    "assignment.UserService"
+    "assignment.backend.UserService"
     )>
 
 <cfset response = userService.getAllUsers() >
