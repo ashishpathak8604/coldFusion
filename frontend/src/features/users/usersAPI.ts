@@ -1,4 +1,4 @@
-import type { ApiResponse,User } from "./userTypes";
+import type { CreateUser, ApiResponse,User } from "./userTypes";
 
 // Base URL coming form .env//
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -20,4 +20,19 @@ export async function getUserById (
     const result: ApiResponse<User> = await response.json();
 
     return result
+}
+
+export async function createUser(
+    user: CreateUser
+): Promise<ApiResponse<User>> {
+ const response = await fetch( `${API_BASE_URL}/users`,{
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+    },
+    body: JSON.stringify(user),
+ })
+ const result: ApiResponse<User> = await response.json();
+ return result;
+    
 }

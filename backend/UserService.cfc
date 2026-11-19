@@ -100,4 +100,133 @@
     
     </cffunction>
     
+    <!--- Add a new user to the database --->
+<cffunction name="addUser"
+access="public"
+returntype="struct"
+output="false"
+hint="Validates and a creates a new user" >
+
+<cfargument name="name" type="any" required="true" >
+<cfargument name="email" type="any" required="true" >
+<cfargument name="age" type="any" required="true" >
+
+<cftry>
+     
+    <!--- vlaidates name --->
+    <cfif NOT isSimpleValue(arguments.name) OR NOT len(trim(toString(arguments.name)))>
+
+        <cfreturn {
+            "success" = false,
+            "statusCode" = 400,
+            "message" = "Name is required",
+            "data" = {}
+        }>
+    </cfif>
+
+    <!--- validates email --->
+    <cfif NOT isSimpleValue(arguments.email)
+    OR NOT isValid("email", trim(toString(arguments.email)))>
+      <cfreturn {
+        "success" = false,
+        "statusCode" = 400,
+        "message" = "Please provide a vlaid email address",
+        "data" = {}
+      }> 
+</cfif>
+
+<!--- validate the age --->
+
+<cfif NOT isSimpleValue(arguments.age)
+OR NOT isValid("integer", arguments.age)
+OR val(arguments.age) LT 1
+OR val(arguments.age) GT 120>
+     
+<cfreturn {
+    "success" = false,
+    "statusCode" = 400,
+    "message" = "Age must be an integer between 1 and 120",
+    "data" = {}
+} >
+</cfif>
+
+<!--- Check if the email already exists --->
+<cfquery name="local.qExistingUser">
+   SELECT id
+   FROM users
+   WHERE email = <cfqueryparam 
+   value="#trim(arguments.email)#"
+   cfsqltype="cf_sql_varchar">
+</cfquery>
+<cfif local.qExistingUser.recordCount GT  0 > 
+    <cfreturn {
+    success = false,
+    statusCode = 409,
+    message = "A user with this email already exists",
+    data = {}    
+}>
+</cfif>
+
+<!--- Insert the new value in the database --->
+<cfquery name="local.qInsert" result="local.insertResult">
+ INSERT INTO users (name, email, age)
+    VALUES (
+        <cfqueryparam 
+        value="#trim(toString(arguments.name))#"
+        cfsqltype="cf_sql_varchar">,
+
+        <cfqueryparam 
+        value="#trim(toString(arguments.email))#"
+        cfsqltype="cf_sql_varchar">,
+
+        <cfqueryparam 
+        value="#val(arguments.age)#"
+        cfsqltype="cf_sql_integer"
+        >
+    )
+</cfquery>
+
+<!--- retrives the new added data --->
+<cfquery name="local.qUser">
+SELECT id, name, email, age, created_at
+FROM users
+WHERE id = <cfqueryparam 
+ value="#local.insertResult.generatedKey#"
+ cfsqltype="cf_sql_integer"
+>
+</cfquery>
+
+<cfreturn {
+    "success" = true,
+    "statusCode" = 201,
+    "message" = "User created successfully",
+    "data" = {
+        "id" = local.qUser.id[1],
+        "name" = local.qUser.name[1],
+        "email" = local.qUser.email[1],
+        "age" = local.qUser.age[1],
+        "created_at" = local.qUser.created_at[1]
+    }
+}>
+
+<cfcatch type="any">
+
+    <cflog 
+    file="application"
+    type="error"
+    text="addUser failed: #cfcatch.message#" >
+
+    <cfreturn {
+        "success" = false,
+        "statusCode" = 500,
+        "message" = "internal server error",
+        "data" = {}
+    }>
+
+</cfcatch>
+
+</cftry>
+    
+</cffunction>
+
 </cfcomponent>

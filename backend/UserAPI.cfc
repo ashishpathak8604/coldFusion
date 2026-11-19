@@ -57,7 +57,7 @@
  </cffunction>
 
 
-      
+<!--- get allUsers --->      
         <cffunction 
         name="getAllUsers"
         access="remote"
@@ -102,4 +102,61 @@
                     
         </cftry>
      </cffunction>
-  </cfcomponent> 
+  
+ <!--- Add a new user --->
+ <cffunction name="addUser"
+ access="remote"
+ returntype="void"
+ httpMethod="POST"
+ restPath=""
+ produces="application/json"
+ hint="Creates a new user"
+  >
+
+<cfset local.requestData = getHTTPRequestData() >
+
+<cfset local.body = deserializeJSON(local.requestData.content) >
+
+    <cftry>
+        
+
+    <cfset local.userService = createObject(
+      "component",
+      "assignment.backend.UserService"
+    )>
+
+    <cfset local.response = local.userService.addUser(
+      name = local.body.name,
+      email = local.body.email,
+      age = local.body.age
+    )>
+
+    <cfset restSetResponse({
+      status = local.response.statusCode,
+      content = serializeJSON(local.response)
+    })>
+
+    <cfcatch type="any">
+      <cflog 
+      file="application"
+      type="error"
+      text="UserAPI addUser failed: #cfcatch.message#" >
+
+      <cfset local.errorResponse = {
+        "success" = false,
+        "statusCode" = 500,
+        "message" = "Internal server error",
+        "data" = {}
+      }>
+
+      <cfset restSetResponse({
+        status = 500,
+        content = serializeJSON(local.errorResponse)
+      })>
+           
+        </cfcatch>
+      
+        </cftry>
+  </cffunction>
+
+    </cfcomponent> 

@@ -56,6 +56,34 @@ button {
   gap: 10px;
   margin-top: 15px;
 }
+
+.add-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-user-form h3{
+  margin-top: 0 ;
+}
+
+
+.success-message {
+  padding: 12px;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 5px;
+  color: #256b35;
+}
+
+
+.error-message {
+  padding: 12px;
+  background: #fdeaea;
+  border: 1px solid #e6b3b3;
+  border-radius: 5px;
+  color: #b42323;
+}
 @media (max-width: 700px) {
   .container {
     margin: 25px 15px;

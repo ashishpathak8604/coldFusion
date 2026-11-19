@@ -6,6 +6,13 @@ export interface User {
     age: number;
     created_at: string;
 }
+
+// data required to create  a nw user //
+ export interface CreateUser {
+    name: string;
+    email: string;
+    age: number;
+ }
 // T is a placeholder for waht  response we aer geeting form backend s single user or user[] //
 export interface ApiResponse<T> {
     success: boolean;
