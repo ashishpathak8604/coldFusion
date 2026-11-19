@@ -1,7 +1,7 @@
 import { createSlice,createAsyncThunk } from "@reduxjs/toolkit";
 import { createUser, getAllUsers,getUserById } from "./usersAPI";
 import type {User, RequestStatus,CreateUser} from "./userTypes";
-import { act } from "react";
+
 
 //fetch all users form the backend //
 export const fetchUsers = createAsyncThunk<
