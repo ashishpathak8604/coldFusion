@@ -84,6 +84,41 @@ button {
   border-radius: 5px;
   color: #b42323;
 }
+
+/* Users Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+thead {
+  background: #26354a;
+  color: white;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Clickable rows */
+tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+  background-color: #f0f4f8;
+}
+
+/* Table wrapper for smaller screens */
+.result-section {
+  overflow-x: auto;
+}
 @media (max-width: 700px) {
   .container {
     margin: 25px 15px;

@@ -1,24 +1,27 @@
 import './App.css';
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from './app/hooks';
-import { fetchUsers,fetchUsersById,addUser } from './features/users/usersSlice';
-
+import { fetchUsers,fetchUsersById,addUser,fetchModalUserById } from './features/users/usersSlice';
+import UserDetailsModal from './features/users/UserDetailsModal';
 function App() {
 
   const dispatch = useAppDispatch();
 
   // read users form redux //
  const {
- users,
-  selectedUser,
-  usersStatus,
-  usersError,
-  selectedUserStatus,
-  selectedUserError,
-  createUserStatus,
-  createUserError,
-  createdUser,
-} = useAppSelector((state) => state.users);
+   users,
+   selectedUser,
+   usersStatus,
+   usersError,
+   selectedUserStatus,
+   selectedUserError,
+   createUserStatus,
+   createUserError,
+   createdUser,
+   modalUser,
+   modalUserStatus,
+   modalUserError,
+ } = useAppSelector((state) => state.users);
 
    const [userId, setUserId] = useState("");
    const [showUsers, setShowUsers] = useState(false);
@@ -26,6 +29,8 @@ function App() {
    const [email, setEmail] = useState("");
    const [age, setAge] = useState("");
    const [showAddForm, setShowAddForm] = useState(false);
+   const [showModal, setShowModal] = useState(false);
+
   
      const handleSearch = () => {
       const id = Number(userId);
@@ -56,6 +61,13 @@ function App() {
           setAge("");
         });
      };
+
+     const handleUserClick = (id: number) => {
+      setShowModal(true);
+      dispatch(fetchModalUserById(id));
+     }
+
+     
 
 return (
   <div className="container">
@@ -107,8 +119,11 @@ return (
           onChange={(e) => setAge(e.target.value)}
         />
 
-        <button type="button" onClick={handleCreateUser}
-          disabled = {createUserStatus === "loading"}>
+        <button
+          type="button"
+          onClick={handleCreateUser}
+          disabled={createUserStatus === "loading"}
+        >
           {createUserStatus === "loading" ? "creating..." : "Create User"}
         </button>
       </div>
@@ -150,22 +165,51 @@ return (
     {showUsers && (
       <div className="result-section">
         <h3> All Users</h3>
-
+      
         {usersStatus === "loading" && <p>Loading users...</p>}
         {usersStatus === "failed" && <p>{usersError}</p>}
         {usersStatus === "succeeded" && users.length === 0 && (
           <p>No users found</p>
         )}
         {usersStatus === "succeeded" && users.length > 0 && (
-          <ul>
-            {users.map((user) => (
-              <li key={user.id}>
-                {user.name} - {user.email} - {user.age}
-              </li>
-            ))}
-          </ul>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Age</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id} onClick={() => handleUserClick(user.id)}>
+                  <td>{user.id}</td>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>{user.age}</td>
+                  <td>
+                    {user.created_at
+                      ? new Date(user.created_at).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
+    )}
+
+    {showModal && (
+      <UserDetailsModal
+        user={modalUser}
+        status={modalUserStatus}
+        error={modalUserError}
+        onClose={() => setShowModal(false)}
+      />
     )}
   </div>
 );

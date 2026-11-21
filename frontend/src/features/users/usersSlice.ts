@@ -54,21 +54,41 @@ CreateUser,
         return response.data;
     }
 )
+
+//thunk for elements in the table //
+export const fetchModalUserById = createAsyncThunk<
+  User,
+  number,
+  { rejectValue: string }
+>(
+  "users/fetchModalUserById",
+  async (id, { rejectWithValue }) => {
+    const response = await getUserById(id);
+
+    if (!response.success) {
+      return rejectWithValue(response.message);
+    }
+
+    return response.data;
+  }
+);
 // Describes all the user-related data we want to manage.//
 interface UsersState {
     users: User[];
-    selectedUser: User | null;
+    usersStatus: RequestStatus;
+    usersError: string | null;
+   
     createdUser: User | null;
-  
     createUserStatus: RequestStatus;
     createUserError: string | null;
 
-    usersStatus: RequestStatus;
-    usersError: string | null;
-
+    selectedUser: User | null;
     selectedUserStatus: RequestStatus;
     selectedUserError: string | null;
 
+    modalUser: User | null;
+    modalUserStatus: RequestStatus;
+    modalUserError: string | null;
 }
 // Initial state when the application starts.//
 const initialState: UsersState = {
@@ -83,6 +103,11 @@ const initialState: UsersState = {
     createUserError: null,
     selectedUserStatus: "idle",
     selectedUserError: null,
+    
+    modalUser:  null,
+    modalUserStatus: "idle",
+    modalUserError: null,
+   
 };
 // create the user slice.//
 
@@ -146,6 +171,22 @@ const usersSlice = createSlice({
         state.createUserStatus = "failed";
         state.createUserError =
           action.payload ?? action.error.message ?? "Something went wrong";
+      })
+
+      .addCase(fetchModalUserById.pending, (state) => {
+        state.modalUserStatus = "loading";
+        state.modalUserError = null;
+        state.modalUser = null;
+      })
+
+      .addCase(fetchModalUserById.fulfilled, (state, action) => {
+        state.modalUserStatus = "succeeded";
+        state.modalUser = action.payload;
+      })
+
+      .addCase(fetchModalUserById.rejected, (state, action) => {
+        state.modalUserStatus = "failed";
+        state.modalUserError = action.payload ?? "Failed to fetch user details";
       });
   },
 });
